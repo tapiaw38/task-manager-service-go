@@ -1,0 +1,46 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [develop]
+    push:
+        branches: [main, develop]
+
+env:
+    GO_VERSION_FILE: go.mod
+
+permissions:
+    contents: read
+
+jobs:
+    quality:
+        name: Lint and test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-go@v5
+              with:
+                  go-version-file: ${{ env.GO_VERSION_FILE }}
+                  cache: true
+
+            - name: Check formatting
+              run: |
+                  unformatted=$(gofmt -l ./cmd ./internal)
+                  if [ -n "$unformatted" ]; then
+                    echo "These files need gofmt:"
+                    echo "$unformatted"
+                    exit 1
+                  fi
+
+            - name: Vet
+              run: go vet ./...
+
+            - name: Lint the OpenAPI spec
+              run: npx -y @redocly/cli@latest lint docs/specs/openapi.yaml
+
+            - name: Test
+              run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
+
+            - name: Coverage summary
+              run: go tool cover -func=coverage.out | tail -1 >> "$GITHUB_STEP_SUMMARY"

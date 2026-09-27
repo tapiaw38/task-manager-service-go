@@ -1,0 +1,303 @@
+openapi: 3.0.3
+info:
+  title: Task Manager Service
+  description: |
+    Internal task service. Owns the business rules and the persistence for tasks.
+
+    It is consumed by the Node API gateway, which exposes the public API.
+    Every error uses the `{ "code", "message" }` format.
+  version: 1.0.0
+  contact: {}
+
+servers:
+  - url: http://localhost:8080
+    description: Local environment
+
+security: []
+
+tags:
+  - name: info
+    description: Application metadata
+  - name: tasks
+    description: Task management
+
+paths:
+  /api/info:
+    get:
+      tags: [info]
+      summary: Application information
+      operationId: getInfo
+      responses:
+        '200':
+          description: Application information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+              example:
+                application: Task Manager Service
+                version: 1.0.0
+
+  /api/tasks:
+    get:
+      tags: [tasks]
+      summary: List tasks
+      description: |
+        Returns every task ordered by creation date, newest first.
+
+        The list is not paginated on purpose: the web client renders it with a
+        virtual scroll, so it needs the whole collection.
+      operationId: listTasks
+      responses:
+        '200':
+          description: Task collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [tasks]
+      summary: Create a task
+      description: |
+        Creates a task. The title is required; the description is optional.
+        Both fields are sanitized before persistence by trimming and collapsing
+        internal whitespace. The identifier and timestamps are assigned by the
+        service.
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskPayload'
+            example:
+              title: Buy milk
+              description: Go to the supermarket
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Task identifier
+        schema:
+          type: string
+        example: 2c8d915b-6398-41e1-8896-396af606623a
+
+    get:
+      tags: [tasks]
+      summary: Get a task
+      operationId: getTask
+      responses:
+        '200':
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags: [tasks]
+      summary: Delete a task
+      operationId: deleteTask
+      responses:
+        '204':
+          description: Task deleted; no content
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{id}/complete:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Task identifier
+        schema:
+          type: string
+        example: 2c8d915b-6398-41e1-8896-396af606623a
+
+    patch:
+      tags: [tasks]
+      summary: Change the completion status of a task
+      description: |
+        Marks a task as completed or pending. Only the status changes; the
+        title, description, identifier and creation date are preserved.
+      operationId: completeTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePayload'
+            example:
+              completed: true
+      responses:
+        '200':
+          description: Task status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Info:
+      type: object
+      required: [application, version]
+      properties:
+        application:
+          type: string
+          example: Task Manager Service
+        version:
+          type: string
+          example: 1.0.0
+
+    Task:
+      type: object
+      required: [id, title, description, completed, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          description: Identifier assigned by the service
+          example: 2c8d915b-6398-41e1-8896-396af606623a
+        title:
+          type: string
+          example: Buy milk
+        description:
+          type: string
+          example: Go to the supermarket
+        completed:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-27T10:05:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-09-27T10:05:00Z'
+
+    TaskPayload:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+          example: Buy milk
+        description:
+          type: string
+          maxLength: 500
+          example: Go to the supermarket
+
+    CompletePayload:
+      type: object
+      required: [completed]
+      properties:
+        completed:
+          type: boolean
+          example: true
+
+    TaskResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Task'
+
+    TaskListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        total:
+          type: integer
+          example: 25
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Stable internal code, suitable for client logic
+          example: task:shared:not-found
+        message:
+          type: string
+          description: Public message, suitable for end users
+          example: task not found
+
+  responses:
+    BadRequest:
+      description: Invalid request or failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidBody:
+              summary: Malformed JSON
+              value:
+                code: common:request-body-parsing-error
+                message: invalid request body format
+            titleRequired:
+              summary: Missing title
+              value:
+                code: task:validation:title-required
+                message: task title is required
+            titleTooShort:
+              summary: Title shorter than three characters
+              value:
+                code: task:validation:title-too-short
+                message: task title is too short
+
+    NotFound:
+      description: The task does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: task:shared:not-found
+            message: task not found
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: task:list:store-error
+            message: failed to list tasks
