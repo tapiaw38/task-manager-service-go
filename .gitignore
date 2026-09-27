@@ -1,4 +1,5 @@
 .env
+data/bd.json
 coverage.out
 /out
 /tmp

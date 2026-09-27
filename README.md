@@ -213,7 +213,7 @@ which detect the Go module on their own.
 ```bash
 gcloud run deploy task-manager-service \
   --source . \
-  --region us-central1 \
+  --region southamerica-east1 \
   --no-allow-unauthenticated \
   --set-env-vars STORE_DRIVER=firestore,FIRESTORE_PROJECT_ID=PROJECT_ID
 ```
