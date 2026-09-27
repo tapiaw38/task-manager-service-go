@@ -1,0 +1,10 @@
+.git
+.github
+.env
+.env.*
+api
+build
+coverage.out
+data
+docs
+tmp
