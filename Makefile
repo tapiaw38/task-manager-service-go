@@ -17,7 +17,8 @@ run-dev: welcome
 	@air
 
 test: welcome
-	@go test ./... -race -coverprofile=coverage.out -covermode=atomic
+	@go test ./... -race -coverpkg=./... -coverprofile=coverage.out -covermode=atomic
+	@./build/covignore.sh coverage.out .covignore
 
 test-cover: test
 	@go tool cover -func=coverage.out | tail -1

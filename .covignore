@@ -1,0 +1,7 @@
+**/mocks
+cmd/api/main.go
+cmd/api/config.go
+docs/docs.go
+internal/adapters/datasources/firestore/client.go
+internal/adapters/datasources/repositories/task/firestore_repository.go
+internal/adapters/web/handlers/docs/get.go
