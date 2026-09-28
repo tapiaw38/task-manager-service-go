@@ -217,7 +217,7 @@ Configure these runtime variables in Cloud Run:
 
 ```text
 STORE_DRIVER=firestore
-FIRESTORE_PROJECT_ID=project-6f7bcba1-aac1-4997-b2c
+FIRESTORE_PROJECT_ID=YOUR_GCP_PROJECT_ID
 FIRESTORE_COLLECTION=tasks
 GIN_MODE=release
 ```
