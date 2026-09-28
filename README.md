@@ -151,7 +151,7 @@ Main codes: `task:validation:title-required`, `task:validation:title-too-short`,
 2. `description` is optional, up to 500 characters.
 3. Both fields are sanitized before persistence: surrounding whitespace is
    trimmed and repeated inner whitespace is collapsed.
-4. The identifier is a UUID assigned by the service; `createdAt` and `updatedAt`
+4. The identifier is a UUID assigned by the service; `created_at` and `updated_at`
    are assigned as well and never taken from the request.
 5. Completing a task only changes its status: title, description, identifier and
    creation date are preserved.

@@ -8,8 +8,8 @@
 | `title` | string | Required task title; 3 to 120 characters after sanitization. |
 | `description` | string | Optional description; up to 500 characters after sanitization. |
 | `completed` | boolean | Completion status. Defaults to `false`. |
-| `createdAt` | string | RFC3339 UTC creation timestamp. |
-| `updatedAt` | string | RFC3339 UTC update timestamp. |
+| `created_at` | string | RFC3339 UTC creation timestamp. |
+| `updated_at` | string | RFC3339 UTC update timestamp. |
 
 Input validation belongs to the task use case. Title and description are trimmed and internal whitespace is collapsed before persistence.
 

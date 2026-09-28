@@ -11,4 +11,4 @@
 
 ## Response
 
-Returns `200` with `{ "data": { ...task } }`. Only `completed` and `updatedAt` change. Invalid input returns `400`; a missing task returns `404`.
+Returns `200` with `{ "data": { ...task } }`. Only `completed` and `updated_at` change. Invalid input returns `400`; a missing task returns `404`.
