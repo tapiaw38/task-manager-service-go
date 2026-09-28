@@ -6,12 +6,12 @@ import (
 )
 
 type Task struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Completed   bool      `json:"completed"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID          string
+	Title       string
+	Description string
+	Completed   bool
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (t *Task) Sanitize() {
