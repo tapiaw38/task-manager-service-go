@@ -58,6 +58,11 @@ func TestRegisterApplicationRoutes(t *testing.T) {
 			path:               "/api/info",
 			expectedStatusCode: http.StatusOK,
 		},
+		"health is registered": {
+			method:             http.MethodGet,
+			path:               "/health",
+			expectedStatusCode: http.StatusOK,
+		},
 		"list tasks is registered": {
 			method:             http.MethodGet,
 			path:               "/api/tasks",

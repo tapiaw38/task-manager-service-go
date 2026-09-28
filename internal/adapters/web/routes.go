@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tapiaw38/task-manager-service-go/internal/adapters/web/handlers/docs"
+	"github.com/tapiaw38/task-manager-service-go/internal/adapters/web/handlers/health"
 	"github.com/tapiaw38/task-manager-service-go/internal/adapters/web/handlers/info"
 	"github.com/tapiaw38/task-manager-service-go/internal/adapters/web/handlers/task"
 	"github.com/tapiaw38/task-manager-service-go/internal/platform/config"
@@ -18,6 +19,8 @@ func RegisterApplicationRoutes(
 	useCases *usecases.Usecases,
 	configService config.ConfigurationService,
 ) {
+	app.GET("/health", health.NewGetHandler())
+
 	app.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, apperrors.NewApplicationError(mappings.NotFoundError, nil))
 	})

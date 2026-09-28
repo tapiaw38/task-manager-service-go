@@ -96,6 +96,7 @@ Base URL: `http://localhost:8080`
 
 | Method   | Route                      | Description                         |
 | :------- | :------------------------- | :---------------------------------- |
+| `GET`    | `/health`                  | Liveness; does not access storage   |
 | `GET`    | `/api/info`                | Application name and version        |
 | `GET`    | `/api/tasks`               | List every task, newest first       |
 | `POST`   | `/api/tasks`               | Create a task                       |
@@ -180,7 +181,7 @@ internal/
     web/
       routes.go
       middlewares/logging.go method, path, status and duration
-      handlers/{task,info,docs}
+      handlers/{task,health,info,docs}
 
   usecases/task/             create, list, get, complete, delete
 ```
@@ -205,28 +206,37 @@ Use cases are tested against a gomock double of the repository, handlers with
 including a concurrency test that runs 25 simultaneous creates under the race
 detector.
 
-## Deploying to Cloud Run
+## Deployment
 
-There is no Dockerfile: Cloud Run builds the image with Google Cloud Buildpacks,
-which detect the Go module on their own.
+The challenge backend was deployed manually through the Google Cloud Console.
+Cloud Build builds the root `Dockerfile` from the `main` branch and deploys the
+resulting image to the `task-manager-service-go` Cloud Run service in
+`southamerica-east1`.
 
-```bash
-gcloud run deploy task-manager-service \
-  --source . \
-  --region southamerica-east1 \
-  --no-allow-unauthenticated \
-  --set-env-vars STORE_DRIVER=firestore,FIRESTORE_PROJECT_ID=PROJECT_ID
+Configure these runtime variables in Cloud Run:
+
+```text
+STORE_DRIVER=firestore
+FIRESTORE_PROJECT_ID=project-6f7bcba1-aac1-4997-b2c
+FIRESTORE_COLLECTION=tasks
+GIN_MODE=release
 ```
 
-Notes for a real deployment:
+Cloud Run provides `PORT`; do not configure it manually. The runtime service
+identity needs `roles/datastore.user` to access Firestore. The JSON driver is
+for local development only because Cloud Run container storage is ephemeral.
 
-- Deploy with `--no-allow-unauthenticated`. This service is internal; only the
-  gateway should reach it. Grant the gateway service account the
-  `roles/run.invoker` role on this service.
-- Use `STORE_DRIVER=firestore`. The JSON driver writes to the container
-  filesystem, which is ephemeral and not shared between instances.
-- The service account needs `roles/datastore.user`.
-- Set `ALLOWED_ORIGINS` to the gateway origin.
+After a successful deployment, verify liveness without accessing Firestore:
+
+```bash
+curl https://SERVICE_URL/health
+```
+
+Expected response:
+
+```json
+{ "status": "ok" }
+```
 
 ### Firestore
 

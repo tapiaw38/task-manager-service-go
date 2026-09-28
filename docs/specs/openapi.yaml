@@ -16,24 +16,42 @@ servers:
 security: []
 
 tags:
+  - name: health
+    description: Service liveness
   - name: info
     description: Application metadata
   - name: tasks
     description: Task management
 
 paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Service liveness
+      description: Answers without checking Firestore.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+              example:
+                status: ok
+
   /api/info:
     get:
       tags: [info]
       summary: Application information
       operationId: getInfo
       responses:
-        '200':
+        "200":
           description: Application information
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Info'
+                $ref: "#/components/schemas/Info"
               example:
                 application: Task Manager Service
                 version: 1.0.0
@@ -49,14 +67,14 @@ paths:
         virtual scroll, so it needs the whole collection.
       operationId: listTasks
       responses:
-        '200':
+        "200":
           description: Task collection
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskListResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/TaskListResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     post:
       tags: [tasks]
@@ -72,21 +90,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TaskPayload'
+              $ref: "#/components/schemas/TaskPayload"
             example:
               title: Buy milk
               description: Go to the supermarket
       responses:
-        '201':
+        "201":
           description: Task created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/tasks/{id}:
     parameters:
@@ -103,28 +121,28 @@ paths:
       summary: Get a task
       operationId: getTask
       responses:
-        '200':
+        "200":
           description: Task found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/TaskResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
     delete:
       tags: [tasks]
       summary: Delete a task
       operationId: deleteTask
       responses:
-        '204':
+        "204":
           description: Task deleted; no content
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/tasks/{id}/complete:
     parameters:
@@ -148,25 +166,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CompletePayload'
+              $ref: "#/components/schemas/CompletePayload"
             example:
               completed: true
       responses:
-        '200':
+        "200":
           description: Task status updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+
     Info:
       type: object
       required: [application, version]
@@ -198,11 +224,11 @@ components:
         createdAt:
           type: string
           format: date-time
-          example: '2026-09-27T10:05:00Z'
+          example: "2026-09-27T10:05:00Z"
         updatedAt:
           type: string
           format: date-time
-          example: '2026-09-27T10:05:00Z'
+          example: "2026-09-27T10:05:00Z"
 
     TaskPayload:
       type: object
@@ -231,7 +257,7 @@ components:
       required: [data]
       properties:
         data:
-          $ref: '#/components/schemas/Task'
+          $ref: "#/components/schemas/Task"
 
     TaskListResponse:
       type: object
@@ -240,7 +266,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Task'
+            $ref: "#/components/schemas/Task"
         total:
           type: integer
           example: 25
@@ -264,7 +290,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             invalidBody:
               summary: Malformed JSON
@@ -287,7 +313,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             code: task:shared:not-found
             message: task not found
@@ -297,7 +323,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             code: task:list:store-error
             message: failed to list tasks
